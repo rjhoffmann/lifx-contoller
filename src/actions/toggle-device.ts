@@ -1,7 +1,7 @@
 import streamDeck, { action, Action, DidReceiveSettingsEvent, JsonValue, KeyAction, SendToPluginEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from '@elgato/streamdeck';
 import { readFileSync } from 'fs';
 
-import { ListLightsResponse } from '../types/lifxClient';
+import { ListResponse } from '../types/lifxClient';
 import { GlobalSettings } from '../types/settings';
 
 type ToggleSettings = {
@@ -54,7 +54,7 @@ export class ToggleDevice extends SingletonAction<ToggleSettings> {
         const response = await fetch(`${lifxApiRootUrl}/lights/${lifxDeviceId}`, { headers });
 
         if (response.ok) {
-          const lights = await response.json() as ListLightsResponse[];
+          const lights: ListResponse[] = await response.json();
           if (lights.length > 0) {
             (ev.action as KeyAction<ToggleSettings>).setState(lights[0].power === 'on' ? 1 : 0);
           }
@@ -78,11 +78,11 @@ export class ToggleDevice extends SingletonAction<ToggleSettings> {
       const response = await fetch(`${lifxApiRootUrl}/lights/all`, { headers });
       
       if (response.ok) {
-        const json = await response.json() as ListLightsResponse[];
+        const listResponse: ListResponse[] = await response.json();
 
         streamDeck.ui.current?.sendToPropertyInspector({
           event: 'getLifxDevices',
-          items: json.map((device) => ({
+          items: listResponse.map((device) => ({
             label: `${device.label} (${device.location.name} | ${device.group.name})`,
             value: device.id,
           })),
