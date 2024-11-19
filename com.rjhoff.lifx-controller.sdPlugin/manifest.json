@@ -1,0 +1,54 @@
+{
+	"$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+	"Name": "lifx-controller",
+	"Version": "0.1.0.0",
+	"Author": "rjhoff",
+	"Actions": [
+		{
+			"Name": "Toggle Device",
+			"UUID": "com.rjhoff.lifx-controller.toggle-device",
+			"Icon": "imgs/actions/toggle-device/lightbulb-exclamation",
+			"Tooltip": "Toggles the On/Off state of a single device.",
+			"PropertyInspectorPath": "ui/toggle-device.html",
+			"Controllers": [
+				"Keypad"
+			],
+			"States": [
+				{
+					"Name": "Off",
+					"Image": "imgs/actions/toggle-device/light-off",
+					"TitleAlignment": "bottom"
+				},
+				{
+					"Name": "On",
+					"Image": "imgs/actions/toggle-device/light-on",
+					"TitleAlignment": "bottom"
+				}
+			]
+		}
+	],
+	"Category": "lifx-controller",
+	"CategoryIcon": "imgs/plugin/category-icon",
+	"CodePath": "bin/plugin.js",
+	"Description": "LiFX Controller",
+	"Icon": "imgs/plugin/marketplace",
+	"SDKVersion": 2,
+	"Software": {
+		"MinimumVersion": "6.4"
+	},
+	"OS": [
+		{
+			"Platform": "mac",
+			"MinimumVersion": "10.15"
+		},
+		{
+			"Platform": "windows",
+			"MinimumVersion": "10"
+		}
+	],
+	"Nodejs": {
+		"Version": "20",
+		"Debug": "enabled"
+	},
+	"UUID": "com.rjhoff.lifx-controller"
+}
