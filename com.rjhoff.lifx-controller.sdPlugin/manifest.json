@@ -1,6 +1,6 @@
 {
 	"$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
-	"Name": "lifx-controller",
+	"Name": "LiFX API Controller",
 	"Version": "0.1.0.0",
 	"Author": "rjhoff",
 	"Actions": [
@@ -30,7 +30,7 @@
 	"Category": "lifx-controller",
 	"CategoryIcon": "imgs/plugin/category-icon",
 	"CodePath": "bin/plugin.js",
-	"Description": "LiFX Controller",
+	"Description": "Control LiFX devices using the LiFX HTTP API.",
 	"Icon": "imgs/plugin/marketplace",
 	"SDKVersion": 2,
 	"Software": {

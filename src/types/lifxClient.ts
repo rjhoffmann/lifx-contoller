@@ -18,6 +18,14 @@ export type ListLightsResponse = {
     id: string;
     name: string;
   };
+  relays?: {
+    index: number;
+    label: string;
+    group_label: string;
+    group_id: string;
+    power: string;
+    mode: string;
+  }[];
   product: {
     name: string;
     identifier: string;

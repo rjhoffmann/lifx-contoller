@@ -35,7 +35,7 @@ export class ToggleDevice extends SingletonAction<ToggleSettings> {
         power: nextPowerState
       }),
     });
-    
+
     if (response.ok) {
       this.currentPowerState = nextPowerState;
       (ev.action as KeyAction<ToggleSettings>).setState(nextPowerState === 'on' ? 1 : 0);
@@ -79,7 +79,6 @@ export class ToggleDevice extends SingletonAction<ToggleSettings> {
       
       if (response.ok) {
         const json = await response.json() as ListLightsResponse[];
-        streamDeck.logger.info('LiFX API Response', json);
 
         streamDeck.ui.current?.sendToPropertyInspector({
           event: 'getLifxDevices',
