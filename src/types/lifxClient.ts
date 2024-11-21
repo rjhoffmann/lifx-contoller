@@ -17,6 +17,15 @@ export type ListResponse = {
   seconds_since_seen: number;
 }
 
+export type ToggleResponse = {
+  results: {
+    id: string;
+    label: string;
+    status: string;
+    power: string;
+  }[];
+};
+
 export type Color = {
   hue: number;
   saturation: number;

@@ -1,8 +1,9 @@
 import streamDeck, { action, Action, DidReceiveSettingsEvent, JsonValue, KeyAction, SendToPluginEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from '@elgato/streamdeck';
 import { readFileSync } from 'fs';
 
-import { ListResponse } from '../types/lifxClient';
+import { ListResponse, ToggleResponse } from '../types/lifxClient';
 import { GlobalSettings } from '../types/settings';
+import { validateHeaderName } from 'http';
 
 type ToggleSettings = {
   lifxDeviceId: string;
@@ -21,24 +22,19 @@ export class ToggleDevice extends SingletonAction<ToggleSettings> {
     const { lifxApiKey, lifxApiRootUrl } = await streamDeck.settings.getGlobalSettings<GlobalSettings>();
     const { lifxDeviceId } = ev.payload.settings;
 
-    const nextPowerState = this.currentPowerState === 'on' ? 'off' : 'on';
-
-    const response = await fetch(`${lifxApiRootUrl}/lights/${lifxDeviceId}/state`, {
-      method: 'PUT',
+    const response = await fetch(`${lifxApiRootUrl}/lights/${lifxDeviceId}/toggle`, {
+      method: 'POST',
       headers: {
         'Authorization': `Bearer ${lifxApiKey}`,
         'content-type': 'application/json',
       },
-      body: JSON.stringify({
-        duration: 1,
-        fast: false,
-        power: nextPowerState
-      }),
     });
 
     if (response.ok) {
-      this.currentPowerState = nextPowerState;
-      (ev.action as KeyAction<ToggleSettings>).setState(nextPowerState === 'on' ? 1 : 0);
+      const { results } = await response.json() as ToggleResponse;
+      const resultPowerState = results[0].power as 'off' | 'on';
+      this.currentPowerState = resultPowerState;
+      (ev.action as KeyAction<ToggleSettings>).setState(resultPowerState === 'on' ? 1 : 0);
     } else {
       streamDeck.logger.error('Error fetching from LiFX API', response);
     }
@@ -54,9 +50,13 @@ export class ToggleDevice extends SingletonAction<ToggleSettings> {
         const response = await fetch(`${lifxApiRootUrl}/lights/${lifxDeviceId}`, { headers });
 
         if (response.ok) {
-          const lights: ListResponse[] = await response.json();
+          const lights = await response.json() as Array<ListResponse>;
           if (lights.length > 0) {
-            (ev.action as KeyAction<ToggleSettings>).setState(lights[0].power === 'on' ? 1 : 0);
+            if (lights[0].product.identifier === 'lifx_switch' && lights[0].relays) {
+              (ev.action as KeyAction<ToggleSettings>).setState(lights[0].relays.relays[0].power === 'on' ? 1 : 0);
+            } else {
+              (ev.action as KeyAction<ToggleSettings>).setState(lights[0].power === 'on' ? 1 : 0);
+            }
           }
         } else {
           streamDeck.logger.error('Error fetching from LiFX API in interval', response);
@@ -78,14 +78,25 @@ export class ToggleDevice extends SingletonAction<ToggleSettings> {
       const response = await fetch(`${lifxApiRootUrl}/lights/all`, { headers });
       
       if (response.ok) {
-        const listResponse: ListResponse[] = await response.json();
+        const listResponse = await response.json() as Array<ListResponse>;
 
         streamDeck.ui.current?.sendToPropertyInspector({
           event: 'getLifxDevices',
-          items: listResponse.map((device) => ({
-            label: `${device.label} (${device.location.name} | ${device.group.name})`,
-            value: device.id,
-          })),
+          items: listResponse.map((device) => {
+            if (device.product.identifier === 'lifx_switch' && device.relays) {
+              return {
+                label: `${device.label} (${device.location.name} | ${device.group.name})`,
+                children: device.relays.relays.map((relay) => ({
+                  label: `${device.label} ${relay.label} (${device.location.name} | ${device.group.name})`,
+                  value: `${device.id}|${relay.index}`,
+                })),
+              }
+            }
+            return {
+              label: `${device.label} (${device.location.name} | ${device.group.name})`,
+              value: device.id,
+            }
+          }),
         });
       } else {
         streamDeck.logger.error('Error fetching from LiFX API', response);
